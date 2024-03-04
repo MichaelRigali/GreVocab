@@ -173,20 +173,37 @@ def quiz():
     categories = ['barron_333']  # Update with your actual category names
     questions = []
 
-    for category in categories:
-        # Fetch vocabulary data for each category
-        vocabulary = fetch_vocabulary(category)
-        if vocabulary:
-            # Generate vocabulary questions
-            questions.extend(generate_vocab_questions(vocabulary))
-        else:
-            return f"Failed to fetch {category} vocabulary data. Please try again later."
+    # Check if the query parameter 'incorrect' is present and set to 'true'
+    if request.args.get('incorrect') == 'true':
+        # Filter questions based on incorrect answers
+        incorrect_words = [answer['word'] for answer in incorrect_answers]
+        incorrect_definitions = [answer['definition'] for answer in incorrect_answers]
+        for category in categories:
+            vocabulary = fetch_vocabulary(category)
+            if vocabulary:
+                for vocab_item in vocabulary:
+                    if vocab_item['word'] in incorrect_words and vocab_item['definition'] in incorrect_definitions:
+                        questions.append({
+                            'question': f"What is the definition of '{vocab_item['word']}'?",
+                            'options': [vocab_item['definition']] + random.sample([item['definition'] for item in vocabulary if item['definition'] != vocab_item['definition']], 3),
+                            'correct_answer': vocab_item['definition'],
+                            'word': vocab_item['word']
+                        })
+            else:
+                return f"Failed to fetch {category} vocabulary data. Please try again later."
+    else:
+        for category in categories:
+            vocabulary = fetch_vocabulary(category)
+            if vocabulary:
+                questions.extend(generate_vocab_questions(vocabulary))
+            else:
+                return f"Failed to fetch {category} vocabulary data. Please try again later."
 
-    # Pass the first question to the template
     if questions:
         return render_template('quiz.html', question=questions[0])
     else:
         return "No questions available. Please try again later."
+
 
 
 @app.route('/etymology', methods=['GET'])

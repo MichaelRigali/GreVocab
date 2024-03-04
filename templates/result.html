@@ -154,6 +154,10 @@
         </div>
         
         <a href="{{ url_for('quiz') }}" class="next-question">Next Question</a>
+
+        <form action="/restart" method="post">
+            <button type="submit" class="restart-btn">Restart Quiz</button>
+        </form>
     </div>
 
     <script>
