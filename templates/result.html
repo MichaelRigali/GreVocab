@@ -51,6 +51,16 @@
             font-weight: bold;
         }
 
+        .correct-definition {
+            color: green;
+            font-weight: bold;
+        }
+
+        .incorrect-definition {
+            color: red;
+            font-weight: bold;
+        }
+
         .show-incorrect-btn {
             background-color: #007bff;
             color: #fff;
@@ -94,6 +104,22 @@
             font-weight: bold;
             color: #007bff;
         }
+
+        .quiz-exclusively-btn {
+            display: none;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .quiz-exclusively-btn:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 
@@ -101,10 +127,15 @@
     <div class="container">
         <h1>Result</h1>
         <div class="result">
-            <p>{{ result }}</p>
-            {% if result == 'Incorrect' %}
-            <p>The correct definition for '<strong>{{ incorrect_answers[-1].word }}</strong>' is '<strong>{{ incorrect_answers[-1].definition }}</strong>'.</p>
-            <p>Your answer was '<strong>{{ incorrect_answers[-1].user_answer }}</strong>'.</p>
+            {% if result == 'Correct' %}
+            <p class="correct-answer">{{ result }}</p>
+            <p>The correct definition for '<strong class="correct-answer">{{ correct_word }}</strong>' is '<strong class="correct-answer">{{ correct_definition }}</strong>'.</p>
+            {% elif result == 'Incorrect' %}
+            <p class="incorrect-answer">{{ result }}</p>
+            <p>The correct definition for '<strong class="correct-answer">{{ incorrect_answers[-1].word }}</strong>' is '<strong class="correct-answer">{{ incorrect_answers[-1].definition }}</strong>'.</p>
+            <p>Your answer was '<strong class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</strong>'.</p>
+            <p>Language of Origin: <strong>{{ incorrect_language_of_origin }}</strong></p> <!-- Display language of origin -->
+            <p>Part of Speech: <strong>{{ incorrect_part_of_speech }}</strong></p> <!-- Display part of speech -->
             {% endif %}
             <p>Total correct answers: <strong>{{ total_correct }}</strong></p>
             <p>Total incorrect answers: <strong>{{ total_incorrect }}</strong></p>
@@ -116,22 +147,30 @@
             <h2>Incorrect Answers</h2>
             <ul>
                 {% for answer in incorrect_answers %}
-                <li><strong>{{ answer.word }}</strong>: {{ answer.definition }}</li>
+                <li><strong>{{ answer.word }}</strong>: <span class="incorrect-definition">{{ answer.definition }}</li>
                 {% endfor %}
             </ul>
+            <button class="quiz-exclusively-btn" id="quiz-exclusively-btn">Quiz These Definitions Exclusively</button>
         </div>
         
-        <a href="{{ url_for('index', q=current_question_index + 1) }}" class="next-question">Next Question</a>
+        <a href="{{ url_for('quiz') }}" class="next-question">Next Question</a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var showIncorrectButton = document.getElementById('show-incorrect-btn');
             var incorrectSection = document.getElementById('incorrect-section');
+            var quizExclusivelyBtn = document.getElementById('quiz-exclusively-btn');
             
             showIncorrectButton.addEventListener('click', function () {
                 incorrectSection.style.display = 'block';
                 showIncorrectButton.style.display = 'none'; // Hide the button after showing incorrect answers
+                quizExclusivelyBtn.style.display = 'block'; // Show the quiz exclusively button
+            });
+
+            quizExclusivelyBtn.addEventListener('click', function () {
+                // Redirect to the quiz page with only incorrect definitions
+                window.location.href = '/quiz?incorrect=true';
             });
         });
     </script>

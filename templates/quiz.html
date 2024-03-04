@@ -130,7 +130,7 @@
         <div class="quiz-question">
             <p>{{ question.question }}</p>
         </div>
-        <form method="post">
+        <form method="post" action="{{ url_for('index') }}">
             <ul class="quiz-options">
                 {% for option in question.options %}
                 <li>
