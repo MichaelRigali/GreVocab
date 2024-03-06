@@ -30,6 +30,8 @@ def fetch_vocabulary(category):
         print(f"An error occurred while fetching {category} vocabulary data:", e)
         return None
 
+vocabulary = fetch_vocabulary("barron_333")
+
 # Function to generate vocabulary questions
 def generate_vocab_questions(vocabulary, num_questions=5):
     questions = []
@@ -37,22 +39,9 @@ def generate_vocab_questions(vocabulary, num_questions=5):
         # Randomly select a vocabulary item
         vocab_item = random.choice(vocabulary)
         word = vocab_item['word']
-        definition = vocab_item['definition']
-        # Generate question and options
-        question = f"What is the definition of '{word}'?"
-        options = [definition]
-        while len(options) < 4:
-            random_option = random.choice(vocabulary)['definition']
-            if random_option not in options:
-                options.append(random_option)
-        random.shuffle(options)
-        # Create question dictionary
-        questions.append({
-            'question': question,
-            'options': options,
-            'correct_answer': definition,
-            'word': word
-        })
+        # sean's magic
+        question = generate_vocab_question(vocabulary, word)
+        questions.append(question)
     return questions
 
 # Function to get etymology for a word
@@ -114,7 +103,6 @@ def index():
                        incorrect_etymology=incorrect_etymology, incorrect_language_of_origin=incorrect_language_of_origin,
                        incorrect_part_of_speech=incorrect_part_of_speech, correct_definition=correct_definition)
 
-
     # If it's a GET request, display the quiz question
     categories = ['barron_333']  # Update with your actual category names
     questions = []
@@ -139,59 +127,105 @@ def result():
     global incorrect_answers_count
     global incorrect_answers
 
-    if incorrect_answers:
-        last_answered_question = incorrect_answers[-1]
-        correct_word = last_answered_question['word']
-        correct_answer = last_answered_question['definition']
-        user_answer = last_answered_question['user_answer']
+    if request.method == 'POST':
+        user_answer = request.form.get('answer')
+        correct_answer = request.form.get('correct_answer')
+        word = request.form.get('word')
 
         if user_answer == correct_answer:
-            result = 'Correct'
+            # Remove the word from the incorrect_answers list
+            incorrect_answers[:] = [answer for answer in incorrect_answers if answer['word'] != word]
             correct_answers_count += 1
-            correct_definition = correct_answer
+            return render_template('result.html', result='Correct', correct_word=word,
+                                   correct_answers_count=correct_answers_count,
+                                   incorrect_answers_count=len(incorrect_answers),
+                                   incorrect_answers=incorrect_answers,
+                                   total_correct=correct_answers_count,
+                                   total_incorrect=len(incorrect_answers))
         else:
-            result = 'Incorrect'
-            incorrect_answers_count += 1
-            incorrect_etymology, incorrect_language_of_origin, incorrect_part_of_speech = get_word_details(correct_word)
-            correct_definition = None
+            # If the answer is incorrect, process it as before
+            last_answered_question = incorrect_answers[-1]
+            correct_word = last_answered_question['word']
+            correct_answer = last_answered_question['definition']
+            user_answer = last_answered_question['user_answer']
 
-        total_correct = correct_answers_count
-        total_incorrect = incorrect_answers_count
+            if user_answer == correct_answer:
+                result = 'Correct'
+                correct_answers_count += 1
+                correct_definition = correct_answer
+            else:
+                result = 'Incorrect'
+                incorrect_answers_count += 1
+                incorrect_etymology, incorrect_language_of_origin, incorrect_part_of_speech = get_word_details(
+                    correct_word)
+                correct_definition = None
 
-        return render_template('result.html', result=result, correct_word=correct_word,
-                               correct_answers_count=correct_answers_count, incorrect_answers_count=incorrect_answers_count,
-                               incorrect_answers=incorrect_answers, total_correct=total_correct, total_incorrect=total_incorrect,
-                               incorrect_etymology=incorrect_etymology, incorrect_language_of_origin=incorrect_language_of_origin,
-                               incorrect_part_of_speech=incorrect_part_of_speech, correct_definition=correct_definition)
+            total_correct = correct_answers_count
+            total_incorrect = incorrect_answers_count
+
+            return render_template('result.html', result=result, correct_word=correct_word,
+                                   correct_answers_count=correct_answers_count,
+                                   incorrect_answers_count=incorrect_answers_count,
+                                   incorrect_answers=incorrect_answers, total_correct=total_correct,
+                                   total_incorrect=total_incorrect,
+                                   incorrect_etymology=incorrect_etymology,
+                                   incorrect_language_of_origin=incorrect_language_of_origin,
+                                   incorrect_part_of_speech=incorrect_part_of_speech,
+                                   correct_definition=correct_definition)
+
     else:
+        # If it's a GET request, redirect to the main quiz page
         return redirect('/')
+    
+# Generate one vocab question over and over
+def generate_vocab_question(vocabulary: dict, word: str):
+    vocabulary_dict = {d['word']: d for d in vocabulary}
+    random_keys = random.sample(sorted(vocabulary_dict.keys()), 3) 
+    randomized_options = [vocabulary_dict[word]['definition']] + ([vocabulary_dict[random_word]['definition'] for random_word in random_keys])
+    random.shuffle(randomized_options)
+    return {'question': f"What is def of {word}?", 
+            'options': randomized_options, 
+            'correct_answer': vocabulary_dict[word]["definition"],
+            'word':word}
 
-
-
-@app.route('/quiz')
+@app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
+    global incorrect_answers
+
+    # Define categories here
     categories = ['barron_333']  # Update with your actual category names
-    questions = []
+    vocabulary = fetch_vocabulary("barron_333")
 
     # Check if the query parameter 'incorrect' is present and set to 'true'
     if request.args.get('incorrect') == 'true':
         # Filter questions based on incorrect answers
-        incorrect_words = [answer['word'] for answer in incorrect_answers]
-        incorrect_definitions = [answer['definition'] for answer in incorrect_answers]
-        for category in categories:
-            vocabulary = fetch_vocabulary(category)
-            if vocabulary:
-                for vocab_item in vocabulary:
-                    if vocab_item['word'] in incorrect_words and vocab_item['definition'] in incorrect_definitions:
-                        questions.append({
-                            'question': f"What is the definition of '{vocab_item['word']}'?",
-                            'options': [vocab_item['definition']] + random.sample([item['definition'] for item in vocabulary if item['definition'] != vocab_item['definition']], 3),
-                            'correct_answer': vocab_item['definition'],
-                            'word': vocab_item['word']
-                        })
-            else:
-                return f"Failed to fetch {category} vocabulary data. Please try again later."
+        incorrect_words = {answer['word'] for answer in incorrect_answers}
+        questions = []
+        for incorrect_word in incorrect_words:
+            questions.append(generate_vocab_question(vocabulary, incorrect_word))
+        
+        if not questions:
+            # If there are no more questions based on the incorrect answers, redirect to the result page
+            return redirect('/result')
+
+        if request.method == 'POST':
+            user_answer = request.form.get('answer')
+            correct_answer = request.form.get('correct_answer')
+            word = request.form.get('word')
+            if user_answer == correct_answer:
+                # Remove the word from the incorrect list
+                incorrect_answers = [answer for answer in incorrect_answers if answer['word'] != word]
+
+        # Ensure that the 'question' variable is always defined
+        # If there are no questions left, pass an empty dictionary to prevent 'UndefinedError'
+        question = questions[0] if questions else {}
+
+        return render_template('quiz.html', question=question)
+
     else:
+        # If the query parameter 'incorrect' is not set or not 'true', generate random questions as before
+        questions = []
+
         for category in categories:
             vocabulary = fetch_vocabulary(category)
             if vocabulary:
@@ -199,12 +233,10 @@ def quiz():
             else:
                 return f"Failed to fetch {category} vocabulary data. Please try again later."
 
-    if questions:
-        return render_template('quiz.html', question=questions[0])
-    else:
-        return "No questions available. Please try again later."
-
-
+        if questions:
+            return render_template('quiz.html', question=questions[0])
+        else:
+            return "No questions available. Please try again later."
 
 @app.route('/etymology', methods=['GET'])
 def etymology():
@@ -230,12 +262,6 @@ def restart():
 
     # Redirect to the main quiz page after restart
     return redirect('/')
-
-@app.route('/quiz_incorrect', methods=['POST'])
-def quiz_incorrect():
-    incorrect_answers = request.form.get('incorrect_answers')
-    # Process the incorrect answers and start a new quiz session with these definitions exclusively
-    # You need to implement the logic for starting a new quiz session with these definitions
 
 if __name__ == '__main__':
     app.run(debug=True)

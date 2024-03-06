@@ -167,16 +167,37 @@
             var quizExclusivelyBtn = document.getElementById('quiz-exclusively-btn');
             
             showIncorrectButton.addEventListener('click', function () {
+                // Remove existing incorrect answers
+                var ul = incorrectSection.querySelector('ul');
+                ul.innerHTML = '';
+    
+                // JavaScript array to hold the incorrect answers data
+                var incorrectAnswers = JSON.parse('{{ incorrect_answers | tojson | safe }}');
+    
+                // Add updated incorrect answers dynamically
+                incorrectAnswers.forEach(function(answer) {
+                    var li = document.createElement('li');
+                    li.innerHTML = "<strong>" + answer.word + "</strong>: <span class='incorrect-definition'>" + answer.definition + "</span>";
+                    ul.appendChild(li);
+                });
+    
+                // Show the incorrect answers section
                 incorrectSection.style.display = 'block';
-                showIncorrectButton.style.display = 'none'; // Hide the button after showing incorrect answers
-                quizExclusivelyBtn.style.display = 'block'; // Show the quiz exclusively button
+    
+                // Hide the button after showing incorrect answers
+                showIncorrectButton.style.display = 'none';
+    
+                // Show the quiz exclusively button
+                quizExclusivelyBtn.style.display = 'block';
             });
-
+    
             quizExclusivelyBtn.addEventListener('click', function () {
                 // Redirect to the quiz page with only incorrect definitions
                 window.location.href = '/quiz?incorrect=true';
             });
         });
     </script>
+    
+    
 </body>
 </html>
