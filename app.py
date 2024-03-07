@@ -9,6 +9,7 @@ app = Flask(__name__)
 correct_answers_count = 0
 incorrect_answers_count = 0
 incorrect_answers = []  # Store incorrect answers and their definitions
+incorrect_answer_index = 0  # Initialize index for tracking incorrect answers
 
 # Function to fetch vocabulary data from CSV files
 def fetch_vocabulary(category):
@@ -82,6 +83,8 @@ def index():
     
     # If it's a POST request, process the submitted answer
     if request.method == 'POST':
+        print('hello world!')
+
         user_answer = request.form.get('answer')  # Retrieve the selected answer
         correct_answer = request.form.get('correct_answer')  # Retrieve the correct answer
         correct_word = request.form.get('word')  # Retrieve the correct word
@@ -90,11 +93,21 @@ def index():
             result = 'Correct'
             correct_answers_count += 1
             correct_definition = correct_answer  # Pass correct definition to template
+            # if user_answer in incorrect_answers:
+            # iterating over dicts in list
+            for word_dict in incorrect_answers:
+                if correct_word in word_dict.values():
+                    # print(f'found in incorrect answers {correct_word}')
+                    # now we want to remove this word from the incorrect answers
+                    incorrect_answers.remove(word_dict)
+                    incorrect_answers_count -= 1
+
         else:
             result = 'Incorrect'
             incorrect_answers_count += 1
             incorrect_etymology, incorrect_language_of_origin, incorrect_part_of_speech = get_word_details(correct_word)
             incorrect_answers.append({'word': correct_word, 'definition': correct_answer, 'user_answer': user_answer})  # Store incorrect answer, its definition, and the user's answer
+            print(incorrect_answers)
             correct_definition = None  # Define it as None for incorrect answers
 
         # Redirect to the result page after processing the answer
@@ -122,62 +135,26 @@ def index():
     return render_template('quiz.html', question=questions[0],
                            correct_answers_count=correct_answers_count, incorrect_answers_count=incorrect_answers_count)
 
-
-@app.route('/result', methods=['GET', 'POST'])
+@app.route('/result', methods=['POST'])
 def result():
     global correct_answers_count
     global incorrect_answers_count
     global incorrect_answers
 
-    if request.method == 'POST':
-        user_answer = request.form.get('answer')
-        correct_answer = request.form.get('correct_answer')
-        word = request.form.get('word')
+    # Retrieve data from the form submission
+    user_answer = request.form.get('answer')
+    correct_answer = request.form.get('correct_answer')
+    word = request.form.get('word')
 
-        if user_answer == correct_answer:
-            # Remove the word from the incorrect_answers list
-            incorrect_answers[:] = [answer for answer in incorrect_answers if answer['word'] != word]
-            correct_answers_count += 1
-            return render_template('result.html', result='Correct', correct_word=word,
-                                   correct_answers_count=correct_answers_count,
-                                   incorrect_answers_count=len(incorrect_answers),
-                                   incorrect_answers=incorrect_answers,
-                                   total_correct=correct_answers_count,
-                                   total_incorrect=len(incorrect_answers))
-        else:
-            # If the answer is incorrect, process it as before
-            last_answered_question = incorrect_answers[-1]
-            correct_word = last_answered_question['word']
-            correct_answer = last_answered_question['definition']
-            user_answer = last_answered_question['user_answer']
+    # Redirect or render result page with updated counts and incorrect answers list
+    return render_template('result.html', result=result, correct_word=word,
+                           correct_answers_count=correct_answers_count,
+                           incorrect_answers_count=incorrect_answers_count,
+                           incorrect_answers=incorrect_answers,
+                           total_correct=correct_answers_count,
+                           total_incorrect=len(incorrect_answers))
 
-            if user_answer == correct_answer:
-                result = 'Correct'
-                correct_answers_count += 1
-                correct_definition = correct_answer
-            else:
-                result = 'Incorrect'
-                incorrect_answers_count += 1
-                incorrect_etymology, incorrect_language_of_origin, incorrect_part_of_speech = get_word_details(
-                    correct_word)
-                correct_definition = None
 
-            total_correct = correct_answers_count
-            total_incorrect = incorrect_answers_count
-
-            return render_template('result.html', result=result, correct_word=correct_word,
-                                   correct_answers_count=correct_answers_count,
-                                   incorrect_answers_count=incorrect_answers_count,
-                                   incorrect_answers=incorrect_answers, total_correct=total_correct,
-                                   total_incorrect=total_incorrect,
-                                   incorrect_etymology=incorrect_etymology,
-                                   incorrect_language_of_origin=incorrect_language_of_origin,
-                                   incorrect_part_of_speech=incorrect_part_of_speech,
-                                   correct_definition=correct_definition)
-
-    else:
-        # If it's a GET request, redirect to the main quiz page
-        return redirect('/')
     
 # Generate one vocab question over and over
 def generate_vocab_question(vocabulary: dict, word: str):
@@ -193,51 +170,32 @@ def generate_vocab_question(vocabulary: dict, word: str):
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
     global incorrect_answers
+    global incorrect_answer_index  # Add global variable to keep track of the index
 
     # Define categories here
     categories = ['barron_333']  # Update with your actual category names
     vocabulary = fetch_vocabulary("barron_333")
 
     # Check if the query parameter 'incorrect' is present and set to 'true'
-    # if request.args.get('incorrect') == 'true':
     if request.args.get('incorrect'):
         # Filter questions based on incorrect answers
         incorrect_words = {answer['word'] for answer in incorrect_answers}
-        print(incorrect_words)
-        print('hello world!')
         questions = []
         for incorrect_word in incorrect_words:
             questions.append(generate_vocab_question(vocabulary, incorrect_word))
-        
-        if not questions:
+            return render_template('quiz.html', question=questions[incorrect_answer_index])
+        else:
             # If there are no more questions based on the incorrect answers, redirect to the result page
             return redirect('/result')
-
-        if request.method == 'POST':
-            user_answer = request.form.get('answer')
-            correct_answer = request.form.get('correct_answer')
-            word = request.form.get('word')
-            if user_answer == correct_answer:
-                # Remove the word from the incorrect list
-                incorrect_answers = [answer for answer in incorrect_answers if answer['word'] != word]
-
-        # Ensure that the 'question' variable is always defined
-        # If there are no questions left, pass an empty dictionary to prevent 'UndefinedError'
-        question = questions[0] if questions else {}
-
-        return render_template('quiz.html', question=question)
-
     else:
         # If the query parameter 'incorrect' is not set or not 'true', generate random questions as before
         questions = []
-
         for category in categories:
             vocabulary = fetch_vocabulary(category)
             if vocabulary:
                 questions.extend(generate_vocab_questions(vocabulary))
             else:
                 return f"Failed to fetch {category} vocabulary data. Please try again later."
-
         if questions:
             return render_template('quiz.html', question=questions[0])
         else:
@@ -270,3 +228,8 @@ def restart():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+# Consider adding synonyms
+# Example sentences 
