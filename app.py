@@ -30,6 +30,7 @@ def fetch_vocabulary(category):
         print(f"An error occurred while fetching {category} vocabulary data:", e)
         return None
 
+# Fetch vocabulary data for the Barron's 333 category
 vocabulary = fetch_vocabulary("barron_333")
 
 # Function to generate vocabulary questions
@@ -84,6 +85,7 @@ def index():
         user_answer = request.form.get('answer')  # Retrieve the selected answer
         correct_answer = request.form.get('correct_answer')  # Retrieve the correct answer
         correct_word = request.form.get('word')  # Retrieve the correct word
+        # Create if statement for whether or not being quizzed exclusively or not 
         if user_answer == correct_answer:
             result = 'Correct'
             correct_answers_count += 1
@@ -197,9 +199,12 @@ def quiz():
     vocabulary = fetch_vocabulary("barron_333")
 
     # Check if the query parameter 'incorrect' is present and set to 'true'
-    if request.args.get('incorrect') == 'true':
+    # if request.args.get('incorrect') == 'true':
+    if request.args.get('incorrect'):
         # Filter questions based on incorrect answers
         incorrect_words = {answer['word'] for answer in incorrect_answers}
+        print(incorrect_words)
+        print('hello world!')
         questions = []
         for incorrect_word in incorrect_words:
             questions.append(generate_vocab_question(vocabulary, incorrect_word))
