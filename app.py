@@ -12,6 +12,18 @@ incorrect_answers_count = 0
 incorrect_answers = []  # Store incorrect answers and their definitions
 incorrect_answer_index = 0  # Initialize index for tracking incorrect answers
 
+# Define the route for the root URL
+@app.route('/')
+def home():
+    # Render the home.html template
+    return render_template('home.html')
+
+# Define the route for the 'how' page
+@app.route('/how')
+def how():
+    # Render the how.html template
+    return render_template('how.html')
+
 # Function to fetch vocabulary data from CSV files
 def fetch_vocabulary(category):
     try:
@@ -231,32 +243,12 @@ def quiz():
             return "No questions available. Please try again later."
         
 def clean_etymology(etymology):
-    # Regex to remove anything in '{}' by looking within a nested list, hence 'etymology[0][1]' then stripping the following ' ' or blank space
-    # and also removes the last ',' via rsplit(). 
-    cleaned_etymology = re.sub(r'\{[^}]*\}', '', etymology[0][1]).rsplit(',', 1)[0].strip()
-    return cleaned_etymology
-
-# @app.route('/etymology', methods=['GET'])
-# def etymology():
-#     print("Accessing the etymology route")  # Debugging message
-    
-#     # Retrieve the word from the query parameters
-#     word = request.args.get('word')
-    
-#     # Call the function to get etymology for the word
-#     etymology_response = get_word_details(word)
-    
-#     # Extract etymology from the response
-#     etymology = etymology_response[1]  # Assuming etymology is the second element in the response tuple
-    
-#     # Clean the etymology
-#     cleaned_etymology = clean_etymology(etymology)
-    
-#     # Print the cleaned etymology for further debugging
-#     print("Cleaned Etymology:", cleaned_etymology)
-    
-#     # Return the cleaned etymology as JSON response
-#     return jsonify({'cleaned_etymology': cleaned_etymology})
+    if etymology and isinstance(etymology, list) and len(etymology) > 0 and isinstance(etymology[0], list):
+        # Assuming the etymology is a list of lists, we access the first element of the first list
+        cleaned_etymology = re.sub(r'\{[^}]*\}', '', etymology[0][1]).rsplit(',', 1)[0].strip()
+        return cleaned_etymology
+    else:
+        return "Etymology not found."
 
 @app.route('/restart', methods=['POST'])
 def restart():
@@ -274,8 +266,3 @@ def restart():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-# Consider adding synonyms
-# Example sentences 
