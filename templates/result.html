@@ -135,13 +135,19 @@
             <p>The correct definition for '<strong class="correct-answer">{{ incorrect_answers[-1].word }}</strong>' is '<strong class="correct-answer">{{ incorrect_answers[-1].definition }}</strong>'.</p>
             <p>Your answer was '<strong class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</strong>'.</p>
             <p>Stems: <strong>{{ incorrect_stems }}</strong></p> <!-- Display stems -->
-            <p>Etymology: <strong>{{ incorrect_etymology }}</strong></p> <!-- Display etymology -->
-            <p>Short Definition: <strong>{{ incorrect_short_definition }}</strong></p> <!-- Display short definition -->
-            <p>Part of Speech: <strong>{{ incorrect_part_of_speech }}</strong></p> <!-- Display part of speech -->
+            <p>Etymology: <strong>{{ etymology }}</strong></p>
+            <p>Alternative Definition: <strong>{{ short_definition | join(', ') }}</strong></p>
+            <p>Part of Speech: <strong>{{ part_of_speech }}</strong></p> <!-- Display part of speech -->
             {% endif %}
             <p>Total correct answers: <strong>{{ total_correct }}</strong></p>
             <p>Total incorrect answers: <strong>{{ total_incorrect }}</strong></p>
         </div>
+
+        <!-- return render_template('result.html', result=result, correct_word=correct_word,
+                       incorrect_answers=incorrect_answers, total_correct=correct_answers_count, total_incorrect=incorrect_answers_count,
+                       incorrect_stems=incorrect_stems, etymology=etymology,
+                       short_definition=short_definition, part_of_speech=part_of_speech,
+                       correct_definition=correct_definition) -->
         
         <button class="show-incorrect-btn" id="show-incorrect-btn">Show Incorrect Answers</button>
         

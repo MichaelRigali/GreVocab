@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 import csv
 import random
 import requests
+import re
 
 app = Flask(__name__)
 
@@ -55,7 +56,7 @@ def get_word_details(word):
             # Parsing response JSON
             data = response.json()
             stems = data.get('stems', 'Stems not found.')
-            etymology = data.get('etymology', 'Etymology not found.')
+            etymology = clean_etymology(data.get('etymology', 'Etymology not found.'))
             short_definition = data.get('short_definition', 'Short definition not found.')
             part_of_speech = data.get('part of speech', 'Part of speech not found.')
             return stems, etymology, short_definition, part_of_speech  # Return stems, etymology, short definition, and part of speech
@@ -119,19 +120,18 @@ def index():
         else:
             result = 'Incorrect'
             incorrect_answers_count += 1
-            incorrect_etymology, _, incorrect_part_of_speech, _ = get_word_details(correct_word)
+            # incorrect_etymology, _, incorrect_part_of_speech, _ = get_word_details(correct_word)
+            # stems, etymology, short_definition, part_of_speech
             incorrect_answers.append({'word': correct_word, 'definition': correct_answer, 'user_answer': user_answer})  # Store incorrect answer, its definition, and the user's answer
-            print(incorrect_answers)
             correct_definition = None  # Define it as None for incorrect answers
 
         # Redirect to the result page after processing the answer
         total_correct = correct_answers_count  # Update total_correct after processing
         # Redirect or render result page with updated counts and incorrect answers list
         return render_template('result.html', result=result, correct_word=correct_word,
-                       correct_answers_count=correct_answers_count, incorrect_answers_count=incorrect_answers_count,
                        incorrect_answers=incorrect_answers, total_correct=correct_answers_count, total_incorrect=incorrect_answers_count,
-                       incorrect_stems=incorrect_stems, incorrect_etymology=etymology,
-                       incorrect_short_definition=short_definition, incorrect_part_of_speech=part_of_speech,
+                       incorrect_stems=incorrect_stems, etymology=etymology,
+                       short_definition=short_definition, part_of_speech=part_of_speech,
                        correct_definition=correct_definition)
 
     # If it's a GET request, display the quiz question
@@ -180,10 +180,9 @@ def result():
 
     # Redirect or render result page with updated counts and incorrect answers list
     return render_template('result.html', result=result, correct_word=correct_word,
-                       correct_answers_count=correct_answers_count, incorrect_answers_count=incorrect_answers_count,
                        incorrect_answers=incorrect_answers, total_correct=correct_answers_count, total_incorrect=incorrect_answers_count,
-                       incorrect_stems=incorrect_stems, incorrect_etymology=etymology,
-                       incorrect_short_definition=short_definition, incorrect_part_of_speech=part_of_speech,
+                       incorrect_stems=incorrect_stems, etymology=etymology,
+                       short_definition=short_definition, part_of_speech=part_of_speech,
                        correct_definition=correct_definition)
 
 # Generate one vocab question over and over
@@ -230,17 +229,34 @@ def quiz():
             return render_template('quiz.html', question=questions[0])
         else:
             return "No questions available. Please try again later."
+        
+def clean_etymology(etymology):
+    # Regex to remove anything in '{}' by looking within a nested list, hence 'etymology[0][1]' then stripping the following ' ' or blank space
+    # and also removes the last ',' via rsplit(). 
+    cleaned_etymology = re.sub(r'\{[^}]*\}', '', etymology[0][1]).rsplit(',', 1)[0].strip()
+    return cleaned_etymology
 
-@app.route('/etymology', methods=['GET'])
-def etymology():
-    # Retrieve the word from the query parameters
-    word = request.args.get('word')
+# @app.route('/etymology', methods=['GET'])
+# def etymology():
+#     print("Accessing the etymology route")  # Debugging message
     
-    # Call the function to get etymology for the word
-    etymology = get_word_details(word)[0]  # Fetch only etymology
+#     # Retrieve the word from the query parameters
+#     word = request.args.get('word')
     
-    # Return the etymology as JSON response
-    return jsonify({'etymology': etymology})
+#     # Call the function to get etymology for the word
+#     etymology_response = get_word_details(word)
+    
+#     # Extract etymology from the response
+#     etymology = etymology_response[1]  # Assuming etymology is the second element in the response tuple
+    
+#     # Clean the etymology
+#     cleaned_etymology = clean_etymology(etymology)
+    
+#     # Print the cleaned etymology for further debugging
+#     print("Cleaned Etymology:", cleaned_etymology)
+    
+#     # Return the cleaned etymology as JSON response
+#     return jsonify({'cleaned_etymology': cleaned_etymology})
 
 @app.route('/restart', methods=['POST'])
 def restart():
