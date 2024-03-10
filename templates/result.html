@@ -134,7 +134,9 @@
             <p class="incorrect-answer">{{ result }}</p>
             <p>The correct definition for '<strong class="correct-answer">{{ incorrect_answers[-1].word }}</strong>' is '<strong class="correct-answer">{{ incorrect_answers[-1].definition }}</strong>'.</p>
             <p>Your answer was '<strong class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</strong>'.</p>
-            <p>Language of Origin: <strong>{{ incorrect_language_of_origin }}</strong></p> <!-- Display language of origin -->
+            <p>Stems: <strong>{{ incorrect_stems }}</strong></p> <!-- Display stems -->
+            <p>Etymology: <strong>{{ incorrect_etymology }}</strong></p> <!-- Display etymology -->
+            <p>Short Definition: <strong>{{ incorrect_short_definition }}</strong></p> <!-- Display short definition -->
             <p>Part of Speech: <strong>{{ incorrect_part_of_speech }}</strong></p> <!-- Display part of speech -->
             {% endif %}
             <p>Total correct answers: <strong>{{ total_correct }}</strong></p>
