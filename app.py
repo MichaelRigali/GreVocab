@@ -62,6 +62,10 @@ def capitalize_first_sentence(text):
     capitalized_sentences = [sentence.capitalize() + "." for sentence in sentences]
     return ". ".join(capitalized_sentences)
 
+def capitalize_first_letter(text):
+    return text.capitalize()  # Correct the function to capitalize the first letter of the given text
+
+
 def generate_vocab_questions(vocabulary, num_questions=5):
     questions = []
     for _ in range(num_questions):
@@ -156,11 +160,12 @@ def index():
         # Redirect to the result page after processing the answer
         total_correct = correct_answers_count  # Update total_correct after processing
         # Redirect or render result page with updated counts and incorrect answers list
+        # Redirect to the result page after processing the answer
         return render_template('result.html', result=result, correct_word=correct_word,
-                       incorrect_answers=incorrect_answers, total_correct=correct_answers_count, total_incorrect=incorrect_answers_count,
-                       incorrect_stems=incorrect_stems, etymology=etymology,
-                       short_definition=short_definition, part_of_speech=part_of_speech,
-                       correct_definition=correct_definition)
+                               incorrect_answers=incorrect_answers, total_correct=correct_answers_count,
+                               total_incorrect=incorrect_answers_count, incorrect_stems=stems, etymology=etymology,
+                               short_definition=short_definition, part_of_speech=part_of_speech,
+                               correct_definition=correct_definition)
 
     # If it's a GET request, display the quiz question
     categories = ['barron_333']  # Update with your actual category names
@@ -204,6 +209,10 @@ def result():
         incorrect_stems = ', '.join(stems)  # Join the stems list into a string
     else:
         incorrect_stems = stems
+
+    correct_answer = request.form.get('correct_answer') 
+     # Capitalize the correct word
+    correct_answer = capitalize_first_letter(correct_answer)  # Capitalize the first letter of correct_answer
 
 
     # Redirect or render result page with updated counts and incorrect answers list

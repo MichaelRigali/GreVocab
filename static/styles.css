@@ -67,6 +67,7 @@ h1 {
 
 .incorrect-answer {
     color: #dc3545;
+    text-transform: capitalize;
 }
 
 .next-question {
