@@ -13,25 +13,20 @@
             background-color: #242c34; /* Background color matching the home.html color scheme */
         }
 
-        .correct-answer {
-            color: #28a745;
-            text-transform: capitalize; /* Capitalize the first letter */
-        }
-
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 5% auto 0;
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-top: 5%;
         }
 
         h1 {
             text-align: center;
             color: #5fabfd;
-            margin-bottom: 20px; text-shadow: 1px 1px black;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px black;
         }
 
         .result {
@@ -46,14 +41,17 @@
         .result p {
             margin: 0;
             line-height: 1.6;
+            color: #333;
         }
 
         .correct-answer {
             color: #28a745;
+            text-transform: capitalize;
         }
 
         .incorrect-answer {
             color: #dc3545;
+            text-transform: capitalize;
         }
 
         .standard {
@@ -64,15 +62,18 @@
             color: #dc3545;
         }
 
-        .correct-definition {
-            color: green;
+        .capitalize {
+            text-transform: capitalize;
         }
 
-        .incorrect-definition {
-            color: red;
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
 
-        .show-incorrect-btn {
+        .show-incorrect-btn,
+        .quiz-exclusively-btn {
             background-color: #5fabfd;
             color: #fff;
             border: none;
@@ -80,11 +81,11 @@
             padding: 10px 20px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            display: block;
-            margin: 0 auto 20px;
+            margin-right: 10px;
         }
 
-        .show-incorrect-btn:hover {
+        .show-incorrect-btn:hover,
+        .quiz-exclusively-btn:hover {
             background-color: #0056b3;
         }
 
@@ -94,6 +95,7 @@
             border-radius: 8px;
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
 
         #incorrect-section h2 {
@@ -101,10 +103,6 @@
             color: #333;
             font-size: 24px;
         }
-
-        .capitalize {
-    text-transform: capitalize;
-}
 
         #incorrect-section ul {
             list-style-type: none;
@@ -119,91 +117,58 @@
             color: #007bff;
         }
 
-        .quiz-exclusively-btn {
-            display: none;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
+        strong {
+            font-weight: 640;
         }
 
-        .quiz-exclusively-btn:hover {
-            background-color: #218838;
+        strong::first-letter {
+            text-transform: capitalize;
         }
-
-        .capitalize strong::first-letter {
-    text-transform: capitalize;
-}
-
-    strong {
-        font-weight: 640;
-    }
-
-    .button-container {
-    display: flex;
-}
-
-.button-container > * {
-    margin-right: 10px; /* Adjust margin as needed */
-}
-
-
-        
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>Result</h1>
-        <strong>
         <div class="result">
             {% if result == 'Correct' %}
-            <p class="correct-answer">{{ result }}</p>
-            <p>The correct definition for '<span class="correct-answer">{{ correct_answer }}</span>' is '<span class="correct-answer">{{ correct_definition }}</span>'.</p>
+                <p class="correct-answer">{{ result }}</p>
+                <p>The correct definition for '<span class="correct-answer">{{ correct_answer }}</span>' is '<span class="correct-answer">{{ correct_definition }}</span>'.</p>
             {% elif result == 'Incorrect' %}
-            <p class="incorrect-answer">{{ result }}</p>
-            <p>The correct definition for '<span class="correct-answer">{{ incorrect_answers[-1].word }}</span>' is '<span class="correct-answer">{{ incorrect_answers[-1].definition }}</span>'.</p>
-            <p>Your answer was '<span class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</span>'.</p>
-            <p class="capitalize">Stems:</p>
-            <p class="capitalize">
-            {% for stem in incorrect_stems %}
-            <p><span class="capitalize">{{ stem }}</span></p>
-            {% endfor %}
-            </pp>
-            <p>Etymology: <span class="capitalize">{{ etymology }}</span></p>
-            <p>Alternative Definition: <span style="text-transform: capitalize;">{{ short_definition | join(', ') }}</span></p>
-            <p>Part of Speech: <span class="capitalize">{{ part_of_speech }}</span></p>
+                <p class="incorrect-answer">{{ result }}</p>
+                <p>The correct definition for '<span class="correct-answer">{{ incorrect_answers[-1].word }}</span>' is '<span class="correct-answer">{{ incorrect_answers[-1].definition }}</span>'.</p>
+                <p>Your answer was '<span class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</span>'.</p>
+                <p class="capitalize">Stems:</p>
+                <p class="capitalize">
+                    {% for stem in incorrect_stems %}
+                        <span class="capitalize">{{ stem }}</span><br>
+                    {% endfor %}
+                </p>
+                <p>Etymology: <span class="capitalize">{{ etymology }}</span></p>
+                <p>Alternative Definition: <span class="capitalize">{{ short_definition | join(', ') }}</span></p>
+                <p>Part of Speech: <span class="capitalize">{{ part_of_speech }}</span></p>
             {% endif %}
             <p class="standard">Total correct answers: {{ total_correct }}</p>
             <p class="standard2">Total incorrect answers: {{ total_incorrect }}</p>
         </div>
-    </strong>
-    <div class="button-container">
-        <button class="show-incorrect-btn" id="show-incorrect-btn">Show Incorrect Answers</button>
-        
-        <div id="incorrect-section">
-            <h2>Incorrect Answers</h2>
-            <ul>
-                {% for answer in incorrect_answers %}
-                <li><strong>{{ answer.word }}</strong>: <span class="incorrect-definition">{{ answer.definition }}</span></li>
-                {% endfor %}
-            </ul>
-            <button class="quiz-exclusively-btn" id="quiz-exclusively-btn">Quiz These Definitions Exclusively</button>
+        <div class="button-container">
+            <button class="show-incorrect-btn" id="show-incorrect-btn">Show Incorrect Answers</button>
+            <div id="incorrect-section">
+                <h2>Incorrect Answers</h2>
+                <ul>
+                    {% for answer in incorrect_answers %}
+                        <li><strong>{{ answer.word }}</strong>: <span class="incorrect-definition">{{ answer.definition }}</span></li>
+                    {% endfor %}
+                </ul>
+                <button class="quiz-exclusively-btn" id="quiz-exclusively-btn">Quiz These Definitions Exclusively</button>
+            </div>
+            <form action="{{ url_for('quiz') }}" method="get">
+                <button type="submit" class="show-incorrect-btn" id="show-incorrect-btn">Next Question</button>
+            </form>
+            <form action="/restart" method="post">
+                <button type="submit" class="show-incorrect-btn" id="show-incorrect-btn">Restart Quiz</button>
+            </form>
         </div>
-        
-        <form action="{{ url_for('quiz') }}" method="get">
-            <button type="submit" class="show-incorrect-btn" id="show-incorrect-btn">Next Question</button>
-        </form>
-    
-        <form action="/restart" method="post">
-            <button type="submit" class="show-incorrect-btn" id="show-incorrect-btn">Restart Quiz</button>
-        </form>
-    </div>
-    
     </div>
 
     <script>
