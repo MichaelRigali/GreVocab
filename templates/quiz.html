@@ -21,6 +21,7 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 5%;
         }
 
         h1 {
@@ -36,6 +37,7 @@
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px black solid;
         }
 
         .quiz-options {
@@ -47,6 +49,7 @@
             margin-bottom: 10px;
             display: flex; /* Align items in a row */
             align-items: center; /* Center vertically */
+            border: 1px black solid;
         }
 
         .quiz-options label {
@@ -124,9 +127,9 @@
 
 
         .submit-btn {
-            background-color: #007bff;
+            background-color: #5fabfd;
             color: #fff;
-            border: none;
+            border: 1px solid black;
             border-radius: 4px;
             padding: 10px 20px;
             cursor: pointer;
@@ -139,12 +142,17 @@
         .submit-btn:hover {
             background-color: #0056b3;
         }
+
+        strong {
+        font-weight: 640;
+    }
+
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Vocabulary Quiz</h1>
+        <h1>Vocabulary Quiz</h1> <strong>
         <div class="quiz-question">
             <p>{{ question.question | safe }}</p>
         </div>
@@ -164,6 +172,7 @@
             <input type="hidden" name="word" value="{{ question.word }}">
             <input type="submit" value="Submit" class="submit-btn">
         </form>
+    </strong>
     </div>
 
     <script>
