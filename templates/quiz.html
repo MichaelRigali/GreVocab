@@ -6,6 +6,14 @@
     <title>Quiz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #242c34; /* Background color matching the home.html color scheme */
+            color: black; /* Text color matching the home.html color scheme */
+            text-align: left;
+        }
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -17,12 +25,13 @@
 
         h1 {
             text-align: center;
-            color: #333;
+            color: #5fabfd;
             margin-bottom: 20px;
+            text-shadow: 1px 1px black;
         }
 
         .quiz-question {
-            background-color: #f9f9f9;
+            background-color: #b2d7ff;
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -45,16 +54,14 @@
             align-items: center;
             padding: 10px;
             border-radius: 6px;
-            background-color: #f9f9f9;
+            background-color: #eeecec;
             cursor: pointer;
             transition: background-color 0.3s ease;
             position: relative;
             flex-grow: 1; /* Take up remaining space */
         }
 
-        .quiz-options label:hover {
-            background-color: #e9e9e9;
-        }
+       
 
         .quiz-options input[type="radio"] {
             display: none; /* Hide the radio button */
@@ -103,7 +110,18 @@
 
         .strikeout {
             text-decoration: line-through;
+            color: #c82333;
         }
+
+        .quiz-options input[type="radio"]:checked + label {
+        font-weight: bold; /* Set font weight to bold for selected answer */
+    }
+
+    .quiz-options label:hover,
+    .quiz-options input[type="radio"]:checked + label {
+        background-color: #b2d7ff; /* Change background color for hovered and selected answer */
+    }
+
 
         .submit-btn {
             background-color: #007bff;
@@ -128,7 +146,7 @@
     <div class="container">
         <h1>Vocabulary Quiz</h1>
         <div class="quiz-question">
-            <p>{{ question.question }}</p>
+            <p>{{ question.question | safe }}</p>
         </div>
         <form method="post" action="{{ url_for('index') }}">
             <ul class="quiz-options">
@@ -136,7 +154,7 @@
                 <li>
                     <input type="radio" id="answer{{ loop.index }}" name="answer" value="{{ option }}" {% if option in selected_options %}checked{% endif %}>
                     <label for="answer{{ loop.index }}" id="label{{ loop.index }}">
-                        {{ option }}
+                        <span class="capitalize">{{ option }}</span> <!-- Wrap the option text in a span -->
                         <button type="button" class="cross-out-btn" data-answer="label{{ loop.index }}">X</button>
                     </label>
                 </li>
@@ -150,28 +168,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var crossOutButtons = document.querySelectorAll('.cross-out-btn');
-            crossOutButtons.forEach(function (button) {
-                button.addEventListener('click', function (event) {
-                    event.stopPropagation(); // Prevent radio button click event
-                    var label = button.parentElement;
-                    label.classList.toggle('strikeout');
-                    button.classList.toggle('active'); // Toggle 'active' class on 'x' button
-                });
-            });
+    var crossOutButtons = document.querySelectorAll('.cross-out-btn');
+    crossOutButtons.forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.stopPropagation(); // Prevent radio button click event
+            var label = button.parentElement;
+            var optionText = label.querySelector('.capitalize'); // Select the span containing the option text
+            optionText.classList.toggle('strikeout'); // Toggle the 'strikeout' class on the option text
+            button.classList.toggle('active'); // Toggle 'active' class on 'x' button
+            if (button.classList.contains('active')) {
+                button.style.backgroundColor = '#c82333'; // Change button color to red
+            } else {
+                button.style.backgroundColor = 'transparent'; // Revert button color to transparent
+            }
+        });
+    });
 
-            var radioButtons = document.querySelectorAll('input[type="radio"]');
-            radioButtons.forEach(function (radio) {
-                radio.addEventListener('click', function () {
-                    var labels = document.querySelectorAll('input[type="radio"]:checked + label');
-                    labels.forEach(function (label) {
-                        label.classList.remove('strikeout');
-                        var button = label.querySelector('.cross-out-btn');
-                        button.classList.remove('active'); // Remove 'active' class from 'x' button
-                    });
-                });
+    var radioButtons = document.querySelectorAll('input[type="radio"]');
+    radioButtons.forEach(function (radio) {
+        radio.addEventListener('click', function () {
+            var labels = document.querySelectorAll('input[type="radio"]:checked + label');
+            labels.forEach(function (label) {
+                var optionText = label.querySelector('.capitalize'); // Select the span containing the option text
+                optionText.classList.remove('strikeout'); // Remove 'strikeout' class from the option text
+                var button = label.querySelector('.cross-out-btn');
+                button.classList.remove('active'); // Remove 'active' class from 'x' button
+                button.style.backgroundColor = 'transparent'; // Revert button color to transparent
             });
         });
+    });
+});
+
+
     </script>
 </body>
 </html>

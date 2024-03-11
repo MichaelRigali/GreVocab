@@ -47,7 +47,21 @@ def fetch_vocabulary(category):
 # Fetch vocabulary data for the Barron's 333 category
 vocabulary = fetch_vocabulary("barron_333")
 
-# Function to generate vocabulary questions
+def generate_vocab_question(vocabulary: dict, word: str):
+    vocabulary_dict = {d['word']: d for d in vocabulary}
+    random_keys = random.sample(sorted(vocabulary_dict.keys()), 3) 
+    randomized_options = [capitalize_first_sentence(vocabulary_dict[word]['definition'])] + [capitalize_first_sentence(vocabulary_dict[random_word]['definition']) for random_word in random_keys]
+    random.shuffle(randomized_options)
+    return {'question': f"What is the definition of the word <strong>'{word.capitalize()}</strong>'?", 
+            'options': randomized_options, 
+            'correct_answer': vocabulary_dict[word]["definition"],
+            'word':word}
+
+def capitalize_first_sentence(text):
+    sentences = text.split(". ")
+    capitalized_sentences = [sentence.capitalize() + "." for sentence in sentences]
+    return ". ".join(capitalized_sentences)
+
 def generate_vocab_questions(vocabulary, num_questions=5):
     questions = []
     for _ in range(num_questions):
@@ -57,6 +71,8 @@ def generate_vocab_questions(vocabulary, num_questions=5):
         question = generate_vocab_question(vocabulary, word)
         questions.append(question)
     return questions
+
+
 
 def get_word_details(word):
     try:
@@ -198,15 +214,15 @@ def result():
                        correct_definition=correct_definition)
 
 # Generate one vocab question over and over
-def generate_vocab_question(vocabulary: dict, word: str):
-    vocabulary_dict = {d['word']: d for d in vocabulary}
-    random_keys = random.sample(sorted(vocabulary_dict.keys()), 3) 
-    randomized_options = [vocabulary_dict[word]['definition']] + ([vocabulary_dict[random_word]['definition'] for random_word in random_keys])
-    random.shuffle(randomized_options)
-    return {'question': f"What is def of {word}?", 
-            'options': randomized_options, 
-            'correct_answer': vocabulary_dict[word]["definition"],
-            'word':word}
+# def generate_vocab_question(vocabulary: dict, word: str):
+#     vocabulary_dict = {d['word']: d for d in vocabulary}
+#     random_keys = random.sample(sorted(vocabulary_dict.keys()), 3) 
+#     randomized_options = [vocabulary_dict[word]['definition']] + ([vocabulary_dict[random_word]['definition'] for random_word in random_keys])
+#     random.shuffle(randomized_options)
+#     return {'question': f"What is the definition of the word <strong>{word.capitalize()}</strong>?", 
+#             'options': randomized_options, 
+#             'correct_answer': vocabulary_dict[word]["definition"],
+#             'word':word}
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
