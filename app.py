@@ -112,7 +112,6 @@ def index():
     incorrect_etymology = ''
     incorrect_language_of_origin = ''
     incorrect_part_of_speech = ''
-    total_correct = correct_answers_count  # Define total_correct here
 
     correct_word = None
     incorrect_stems = None
@@ -135,14 +134,19 @@ def index():
         correct_answer = request.form.get('correct_answer')  # Retrieve the correct answer
         correct_word = request.form.get('word')  # Retrieve the correct word
 
-        if user_answer == correct_answer:
+        if user_answer == capitalize_first_sentence(correct_answer):
             result = 'Correct'
             correct_answers_count += 1
             correct_definition = correct_answer  # Pass correct definition to template
+            # if user_answer in incorrect_answers:
+            # iterating over dicts in list
+            for word_dict in incorrect_answers:
+                if correct_word in word_dict.values():
+                    # print(f'found in incorrect answers {correct_word}')
+                    # now we want to remove this word from the incorrect answers
+                    incorrect_answers.remove(word_dict)
+                    incorrect_answers_count -= 1
 
-            # Remove correct word from incorrect_answers if present
-            incorrect_answers = [answer for answer in incorrect_answers if answer['word'] != correct_word]
-            
         else:
             result = 'Incorrect'
             incorrect_answers_count += 1
@@ -152,12 +156,17 @@ def index():
             correct_definition = None  # Define it as None for incorrect answers
 
         # Redirect to the result page after processing the answer
-        total_correct = correct_answers_count  # Update total_correct after processing
-        return render_template('result.html', result=result, correct_word=correct_word,
-                            incorrect_answers=incorrect_answers, total_correct=correct_answers_count,
-                            total_incorrect=incorrect_answers_count, incorrect_stems=stems, etymology=etymology,
-                            short_definition=short_definition, part_of_speech=part_of_speech,
-                            correct_definition=correct_definition)
+        return render_template('result.html', 
+                               result=result, 
+                               correct_word=correct_word,
+                               incorrect_answers=incorrect_answers, 
+                               total_correct=correct_answers_count,
+                               total_incorrect=incorrect_answers_count, 
+                               incorrect_stems=stems, 
+                               etymology=etymology,
+                               short_definition=short_definition, 
+                               part_of_speech=part_of_speech,
+                               correct_definition=correct_definition)
 
     # If it's a GET request, display the quiz question
     categories = ['barron_333']  # Update with your actual category names
