@@ -41,7 +41,6 @@
         .result p {
             margin: 0;
             line-height: 1.6;
-            color: #333;
         }
 
         .correct-answer {
@@ -89,6 +88,10 @@
             background-color: #0056b3;
         }
 
+        .micro {
+            color: #007bff;
+        }
+
         #incorrect-section {
             display: none;
             padding: 20px;
@@ -133,28 +136,22 @@
         <div class="result">
             {% if result == 'Correct' %}
                 <p class="correct-answer">{{ result }}</p>
-                <p>The correct definition for '<span class="correct-answer">{{ correct_answer }}</span>' is '<span class="correct-answer">{{ correct_definition }}</span>'.</p>
+                <span class="correct-answer"><p>The correct definition for '{{ correct_word }}' is '{{ correct_definition }}</span>'.</p>
+                <p class="standard">Total correct answers: {{ total_correct }}</p>
             {% elif result == 'Incorrect' %}
                 <p class="incorrect-answer">{{ result }}</p>
-                <p>The correct definition for '<span class="correct-answer">{{ incorrect_answers[-1].word }}</span>' is '<span class="correct-answer">{{ incorrect_answers[-1].definition }}</span>'.</p>
-                <p>Your answer was '<span class="incorrect-answer">{{ incorrect_answers[-1].user_answer }}</span>'.</p>
-                <p class="capitalize">Stems:</p>
-                <p class="capitalize">
-                    {% for stem in incorrect_stems %}
-                        <span class="capitalize">{{ stem }}</span><br>
-                    {% endfor %}
-                </p>
-                <p>Etymology: <span class="capitalize">{{ etymology }}</span></p>
-                <p>Alternative Definition: <span class="capitalize">{{ short_definition | join(', ') }}</span></p>
-                <p>Part of Speech: <span class="capitalize">{{ part_of_speech }}</span></p>
+                <p><span class="incorrect-answer">Your answer was '{{ incorrect_answers[-1].user_answer }}</span>'.</p>
+                <span class="correct-answer"><p>The correct definition for '{{ incorrect_answers[-1].word }}' is '{{ incorrect_answers[-1].definition }}'.</p></span>
+                <p><span class="micro">Etymology:</span> <span class="capitalize">{{ etymology }}</span></p>
+                <p><span class="micro">Alternative Definition:</span> <span class="capitalize">{{ short_definition | join(', ') }}</span></p>
+                <p><span class="micro">Part of Speech:</span> <span class="capitalize">{{ part_of_speech }}</span></p>
             {% endif %}
-            <p class="standard">Total correct answers: {{ total_correct }}</p>
-            <p class="standard2">Total incorrect answers: {{ total_incorrect }}</p>
         </div>
         <div class="button-container">
-            <button class="show-incorrect-btn" id="show-incorrect-btn">Show Incorrect Answers</button>
+            <button class="show-incorrect-btn" id="show-incorrect-btn">Show All Incorrect Answers</button>
             <div id="incorrect-section">
                 <h2>Incorrect Answers</h2>
+                <p class="standard2">Total incorrect answers: {{ total_incorrect }}</p>
                 <ul>
                     {% for answer in incorrect_answers %}
                         <li><strong>{{ answer.word }}</strong>: <span class="incorrect-definition">{{ answer.definition }}</span></li>
