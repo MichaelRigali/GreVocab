@@ -99,6 +99,7 @@
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
+            font-weight: bold;
         }
 
         #incorrect-section h2 {
@@ -127,12 +128,28 @@
         strong::first-letter {
             text-transform: capitalize;
         }
+
+        .show-additional-info-btn {
+    background-color: #5fabfd;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.show-additional-info-btn:hover {
+    background-color: #0056b3;
+}
+
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Result</h1>
+        <h1>Vocabulary Question Result</h1>
         <div class="result">
             {% if result == 'Correct' %}
                 <p class="correct-answer">{{ result }}</p>
@@ -142,9 +159,14 @@
                 <p class="incorrect-answer">{{ result }}</p>
                 <p><span class="incorrect-answer">Your answer was '{{ incorrect_answers[-1].user_answer }}</span>'.</p>
                 <span class="correct-answer"><p>The correct definition for '{{ incorrect_answers[-1].word }}' is '{{ incorrect_answers[-1].definition }}'.</p></span>
-                <p><span class="micro">Etymology:</span> <span class="capitalize">{{ etymology }}</span></p>
-                <p><span class="micro">Alternative Definition:</span> <span class="capitalize">{{ short_definition | join(', ') }}</span></p>
-                <p><span class="micro">Part of Speech:</span> <span class="capitalize">{{ part_of_speech }}</span></p>
+                <div id="additional-info">
+                    <button class="show-additional-info-btn" id="show-additional-info-btn">Provide additional info about '{{ correct_word }}' here</button>
+                    <div id="additional-info-section" style="display: none;">
+                        <p><span class="micro">Etymology:</span> <span class="capitalize">{{ etymology }}</span></p>
+                        <p><span class="micro">Alternative Definition:</span> <span class="capitalize">{{ short_definition | join(', ') }}</span></p>
+                        <p><span class="micro">Part of Speech:</span> <span class="capitalize">{{ part_of_speech }}</span></p>
+                    </div>
+                </div>
             {% endif %}
         </div>
         <div class="button-container">
@@ -169,6 +191,23 @@
     </div>
 
     <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    var showAdditionalInfoButton = document.getElementById('show-additional-info-btn');
+    var additionalInfoSection = document.getElementById('additional-info-section');
+
+    showAdditionalInfoButton.addEventListener('click', function () {
+        // Toggle display of additional info section
+        if (additionalInfoSection.style.display === 'none') {
+            additionalInfoSection.style.display = 'block';
+            showAdditionalInfoButton.textContent = 'Hide Additional Info';
+        } else {
+            additionalInfoSection.style.display = 'none';
+            showAdditionalInfoButton.textContent = 'Provide Additional Info Again';
+        }
+    });
+});
+
         document.addEventListener('DOMContentLoaded', function () {
             var showIncorrectButton = document.getElementById('show-incorrect-btn');
             var incorrectSection = document.getElementById('incorrect-section');

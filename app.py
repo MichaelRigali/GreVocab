@@ -155,6 +155,9 @@ def index():
             incorrect_answers.append({'word': correct_word, 'definition': correct_answer, 'user_answer': user_answer})
             correct_definition = None  # Define it as None for incorrect answers
 
+        # user picks number of questions 'Q' 
+        # if Q = 1
+        # render 'result.html'
         # Redirect to the result page after processing the answer
         return render_template('result.html', 
                                result=result, 
@@ -292,3 +295,8 @@ def restart():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+# Consider adding flashcards
+# Synonyms + Example sentences
+# Word pronunciation 
